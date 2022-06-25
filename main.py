@@ -80,9 +80,7 @@ if __name__ == '__main__':
 
     #se verifica la conneccion a la Base de Datos
     try:
-        engine = create_engine(
-                BD,echo=False
-            )
+        engine = create_engine(CONN_DB, echo=False)
         engine.connect()
         logging.info("Coneccion con Base de Datos exitosa")
     except SQLAlchemyError as err:
