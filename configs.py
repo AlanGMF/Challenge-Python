@@ -5,6 +5,7 @@ from decouple import config
 #rutas sql
 RUTA_T1=Path.cwd() / 'sql' / "tabla_concat.sql"
 RUTA_T2=Path.cwd() / 'sql' / "tabla_cine.sql"
+RUTAS=[RUTA_T1,RUTA_T2]
 
 #urls
 MUSEO="https://datos.gob.ar/dataset/cultura-mapa-cultural-espacios-culturales/archivo/cultura_4207def0-2ff7-41d5-9095-d42ae8207a5d"

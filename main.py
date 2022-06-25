@@ -9,7 +9,6 @@ from sqlalchemy.exc import SQLAlchemyError
 import datetime
 import sys
 import logging
-#from scripts import engine
 
 logging.basicConfig(
     filename='logs.log',
@@ -127,7 +126,6 @@ if __name__=='__main__':
 
         #se corrijen nombres de provincias
         df.loc[df.provincia == 'Santa Fé'] = 'Santa Fe'
-        df.loc[df.provincia == 'Tierra del Fuego'] = 'Tierra del Fuego, Antártida e Islas del Atlántico Sur'
         df.loc[df.provincia == "Neuquén\xa0"] = "Neuquén"
         
         df['mail'] = df['mail'].apply(mail_o_nan)
@@ -135,22 +133,17 @@ if __name__=='__main__':
         df['web']=df['web'].apply(web_o_nan)
         df['número de teléfono'] = df['número de teléfono'].apply(validacion_tel)
 
-        df['cod_localidad'] = df['cod_localidad'].apply(int_o_uno_negativo)
-        #df.drop(df[df['cod_localidad'] < 0 ].index, inplace = True)
-
-        df['idprovincia'] = df['idprovincia'].apply(int_o_uno_negativo)
-        #df.drop(df[df['idprovincia'] < 0 ].index, inplace = True)
-
-        df['iddepartamento'] = df['iddepartamento'].apply(int_o_uno_negativo)
-        #df.drop(df[df['iddepartamento'] < 0 ].index, inplace = True)
+        df['cod_localidad'] = df['cod_localidad'].apply(int_o_cero)
+        df.loc[df.cod_localidad == 0, :] = np.nan
+        df['idprovincia'] = df['idprovincia'].apply(int_o_cero)
+        df.loc[df.idprovincia == 0, :] = np.nan
+        df['iddepartamento'] = df['iddepartamento'].apply(int_o_cero)
+        df.loc[df.iddepartamento == 0, :] = np.nan
 
         df['categoría']=df['categoría'].apply(string_o_nan)
-        #df['provincia']=df['provincia'].apply(prov_o_nan)    #
         df['localidad']=df['localidad'].apply(string_o_nan)
-        #df['domicilio']=df['domicilio'].apply(domi_o_nan)   #
 
         df['nombre'] = df['nombre'].apply(string_o_nan)
-        df = df.dropna(subset=['categoría','localidad','nombre','provincia'])
 
         if "espacio_incaa" in df.columns:
             df['espacio_incaa']=df['espacio_incaa'].apply(incaa_o_false)
@@ -169,6 +162,7 @@ if __name__=='__main__':
     #se filtran las columnas y se agrega columna fecha
     df_total = df_total.loc[:,tabla_concat_columnas]
     df_total['fecha de carga'] = datetime.datetime.now().strftime("%d/%m/%y")
+    df.loc[df.provincia == 'Tierra del Fuego'] = 'Tierra del Fuego, Antártida e Islas del Atlántico Sur'
 
     #formo la segunda tabla
     df_cine=df_cine.groupby(['provincia'],as_index=False)['pantallas','butacas','espacio_incaa'].sum()
@@ -178,7 +172,7 @@ if __name__=='__main__':
 
     #ACTUALIZACION de la base de datos
     try:
-        df_total.to_sql(name= "primera_tabla", con= engine, index= False, if_exists= "replace")
+        df_total.to_sql(name= "tabla_concat", con= engine, index= False, if_exists= "replace")
         df_cine.to_sql(name= "tabla_cine", con= engine, index= False, if_exists= "replace")
         logging.info("Se actualizo correctamente la Base de Datos")
     except:

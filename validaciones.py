@@ -84,18 +84,20 @@ def mail_o_nan(mail):
     if type(mail)== str and validators.email(mail)==True:
         return mail
     return np.nan
-    
 
-def int_o_uno_negativo(id):
-    """valida si recibe un string decimal o un entero
-        devolviendo np.nan en caso de contrario
+
+def int_o_cero(numero):
+    """valida si recibe un entero
+        devolviendo 0 en caso de contrario
     """
-    if type(id)==str and id.isdecimal():
-        return int(id)
-    if type(id) != int:
-        return -1
-    return id
-
+    #if type(numero)==str:
+    #    if numero.isdecimal():
+    #        return int(numero)
+    #    else:
+    #        return 0
+    if type(numero) != int:
+        return 0
+    return numero
 
 def string_o_nan(palabra):
     """valida si recibe un string no numerico 
@@ -117,13 +119,6 @@ def incaa_o_false(valor):
         return 1
     return False
 
-def prov_o_nan(provincia):
-    pass
-#    if provincia !=str:
-#        return np.nan
-#    if provincia in provincias:  
-#        return provincia
-#    return np.nan
 
 def domi_o_nan(domi):
     """si recive un string que contenga "s/d" o "s/n" devuelve

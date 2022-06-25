@@ -1,6 +1,13 @@
 from sqlalchemy import  create_engine
 from sqlalchemy import text
-from configuracion import *
+from configs import *
+import logging
+import sys
+
+logging.basicConfig(
+    filename='logs.log',
+    level=logging.INFO,
+    format='%(asctime)s,%(filename)s,%(levelname)s,%(message)s')
 
 if __name__=='__main__':
 
@@ -8,15 +15,15 @@ if __name__=='__main__':
         engine = create_engine(
             BD,echo=False
         )
-        print("CONECCION EXITOSA*******************")
+        logging.info("Coneccion con Base de Datos exitosa")
 
-        primera_tabla=open(RUTA_T1,"r")
-        tabla_cine=open(RUTA_T2,"r")
-        query=text(primera_tabla.read())
-        query2=text(tabla_cine.read())
-        engine.execute(query)
-        print("se creo PRIMERAtabla *******************")
-        engine.execute(query2)
-        print("se creo SEGUNDA tabla *******************")
+        for ruta in RUTAS:
+            sentencia_sql = open(ruta,"r")
+            consulta = text(sentencia_sql.read())
+            engine.execute(consulta)
+
+        logging.info("Se crearon las tablas en la Base de Datos")
+        
     except:
-        print("no se tener acceso a la bd")
+        logging.critical("No se pudo conectar a la base de datos")
+        sys.exit()
