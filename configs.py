@@ -12,7 +12,14 @@ MUSEO = "https://datos.gob.ar/dataset/cultura-mapa-cultural-espacios-culturales/
 CINE = "https://datos.gob.ar/dataset/cultura-mapa-cultural-espacios-culturales/archivo/cultura_392ce1a8-ef11-4776-b280-6f1c7fae16ae" 
 BIBLIOTECA = "https://datos.gob.ar/dataset/cultura-mapa-cultural-espacios-culturales/archivo/cultura_01c6c048-dbeb-44e0-8efa-6944f73715d7"
 
-BD = config('CONN_DB')
+#coneccion db
+USER = config('User_ID')
+PASSWORD = config('Password')
+HOST = config('Host')
+PORT = config('Port')
+DATABASE = config('Database')
+
+CONN_DB = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
 
 #nombre archivos
 N_1 = "museo"
