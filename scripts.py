@@ -12,9 +12,7 @@ logging.basicConfig(
 if __name__=='__main__':
 
     try:    
-        engine = create_engine(
-            BD,echo=False
-        )
+        engine = create_engine(CONN_DB, echo=False)
         logging.info("Coneccion con Base de Datos exitosa")
 
         for ruta in RUTAS:
