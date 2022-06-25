@@ -1,23 +1,27 @@
 
-import sqlalchemy
-from configs import *
-from recolector import extraer
-from validaciones import *
+
 import pandas
+import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
-import datetime
+
 import sys
 import logging
+import datetime
+
+from configs import *
+from validaciones import *
+from recolector import extraer
 
 logging.basicConfig(
     filename='logs.log',
     level=logging.INFO,
-    format='%(asctime)s,%(filename)s,%(levelname)s,%(message)s')
+    format='%(asctime)s - %(filename)s - %(levelname)s - %(message)s')
 
-dfs=[]
-dic={}
-ajustes_columnas={
+dfs = []
+dic_categ_ruta = {}
+
+ajustes_columnas = {
     'telefono':'número de teléfono',
     'teléfono':'número de teléfono',
     'categoria':'categoría',
@@ -27,7 +31,7 @@ ajustes_columnas={
     'cp':'código postal'
 }
 
-provincias_id={
+provincias_id = {
     "Jujuy":"1",
     "Salta":"2",
     "Formosa":"3",
@@ -55,7 +59,7 @@ provincias_id={
     
 }
 
-tabla_concat_columnas=[
+tabla_concat_columnas = [
     'cod_localidad',
     'idprovincia',
     'iddepartamento',
@@ -68,9 +72,9 @@ tabla_concat_columnas=[
     'número de teléfono',
     'mail',
     'web'
-    ]
+]
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     logging.info("--- Empieza a correr el programa ---")
 
@@ -103,18 +107,18 @@ if __name__=='__main__':
     for categoria, url in DICCIONARIO.items():
 
         ruta = extraer(categoria,url)
-        dic[categoria]=ruta
+        dic_categ_ruta[categoria] = ruta
     logging.info("Termina extraccion de archivos")   
 
     # PROCESAMIENTO de datos
-    for categoria,ruta in dic.items():
+    for categoria,ruta in dic_categ_ruta.items():
         
         #se lee el archivo csv
-        df=pandas.read_csv(ruta, encoding='utf-8')
+        df = pandas.read_csv(ruta, encoding='utf-8')
 
         #transforma minusculas las indice columnas
         colums_df = df.columns
-        columnas_en_minuscul=[]
+        columnas_en_minuscul = []
 
         for columna in colums_df:
             columnas_en_minuscul.append(columna.lower())
@@ -130,8 +134,8 @@ if __name__=='__main__':
         
         df['mail'] = df['mail'].apply(mail_o_nan)
         df['código postal'] = df['código postal'].apply(validacion_cp)
-        df['web']=df['web'].apply(web_o_nan)
-        df['número de teléfono'] = df['número de teléfono'].apply(validacion_tel)
+        df['web'] = df['web'].apply(web_o_nan)
+        df['número de teléfono'] = df['número de teléfono'].apply(tel_valido)
 
         df['cod_localidad'] = df['cod_localidad'].apply(int_o_cero)
         df.loc[df.cod_localidad == 0, :] = np.nan
@@ -140,20 +144,20 @@ if __name__=='__main__':
         df['iddepartamento'] = df['iddepartamento'].apply(int_o_cero)
         df.loc[df.iddepartamento == 0, :] = np.nan
 
-        df['categoría']=df['categoría'].apply(string_o_nan)
-        df['localidad']=df['localidad'].apply(string_o_nan)
+        df['categoría'] = df['categoría'].apply(string_o_nan)
+        df['localidad'] = df['localidad'].apply(string_o_nan)
 
         df['nombre'] = df['nombre'].apply(string_o_nan)
 
         if "espacio_incaa" in df.columns:
-            df['espacio_incaa']=df['espacio_incaa'].apply(incaa_o_false)
-            df_cine=df
+            df['espacio_incaa'] = df['espacio_incaa'].apply(incaa_o_false)
+            df_cine = df
 
         dfs.append(df)
         logging.info(f"se procesa {categoria} correctamente")
 
     #formo la primera tabla
-    df_total=pandas.concat(dfs,axis=0)
+    df_total = pandas.concat(dfs,axis=0)
 
     #unifico idprovincia para no tener ids distintas
     for provincia,id in provincias_id.items():   
@@ -162,20 +166,30 @@ if __name__=='__main__':
     #se filtran las columnas y se agrega columna fecha
     df_total = df_total.loc[:,tabla_concat_columnas]
     df_total['fecha de carga'] = datetime.datetime.now().strftime("%d/%m/%y")
-    df.loc[df.provincia == 'Tierra del Fuego'] = 'Tierra del Fuego, Antártida e Islas del Atlántico Sur'
-
+    prov ='Tierra del Fuego, Antártida e Islas del Atlántico Sur'
+    df.loc[df.provincia == 'Tierra del Fuego'] = prov
     #formo la segunda tabla
-    df_cine=df_cine.groupby(['provincia'],as_index=False)['pantallas','butacas','espacio_incaa'].sum()
+    df_cine = df_cine.groupby(['provincia'],as_index = False)[
+        'pantallas','butacas','espacio_incaa'].sum()
+
     df_cine['fecha de carga'] = datetime.datetime.now().strftime("%d/%m/%y")
 
     logging.info("Termina el prosesamiento de datos")
 
     #ACTUALIZACION de la base de datos
     try:
-        df_total.to_sql(name= "tabla_concat", con= engine, index= False, if_exists= "replace")
-        df_cine.to_sql(name= "tabla_cine", con= engine, index= False, if_exists= "replace")
+        df_total.to_sql(name= "tabla_concat",
+                        con= engine, index= False,
+                        if_exists= "replace")
+
+        df_cine.to_sql(name= "tabla_cine",
+                        con= engine, index= False,
+                        if_exists= "replace")
+
         logging.info("Se actualizo correctamente la Base de Datos")
     except:
-        logging.error("No se pudo actualizar los datos en las tablas de la Base de Datos")
+        logging.error(
+            "No se pudo actualizar los datos en las tablas de la Base de Datos"
+            )
 
     logging.info("--- Termina programa ---")

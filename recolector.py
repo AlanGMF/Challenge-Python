@@ -10,26 +10,26 @@ import datetime
 import logging
 import sys
 
-mes_esp={
-        1:"enero",
-        2:"febrero",
-        3:"marzo",
-        4:"abril",
-        5:"mayo",
-        6:"junio",
-        7:"julio",
-        8:"agosto",
-        9:"septiembre",
-        10:"octubre",
-        11:"noviembre",
-        12:"diciembre"
-    }
+mes_esp = {
+    1:"enero",
+    2:"febrero",
+    3:"marzo",
+    4:"abril",
+    5:"mayo",
+    6:"junio",
+    7:"julio",
+    8:"agosto",
+    9:"septiembre",
+    10:"octubre",
+    11:"noviembre",
+    12:"diciembre"
+}
 
-fecha=datetime.datetime.now()
+fecha = datetime.datetime.now()
 mes = mes_esp[fecha.month]
 anio = str(fecha.year)
 
-def extraer(categoria: str, url: str ):
+def extraer(categoria: str, url: str):
     """
     recive un nombre y una direccion url de tipo string
     devuelve una ruta tipo Path en la cual guarda el archivo csv
@@ -62,13 +62,15 @@ def extraer(categoria: str, url: str ):
     
     else:
         #crea carpetas
-        Path.joinpath(Path.cwd(), categoria, anio+ "-"+ mes).mkdir(parents = True,exist_ok = True)
-        carpeta_creada = Path.joinpath(Path.cwd(),categoria,str(str(fecha.year)+"-"+mes))
+        Path.joinpath(
+            Path.cwd(), categoria, anio + "-" + mes).mkdir(parents = True,exist_ok = True)
+        carpeta_creada = Path.joinpath(
+            Path.cwd(), categoria, str(str(fecha.year) + "-" + mes))
         logging.info(f"se crean carpetas para archivo {categoria}")
 
         #se forma el nombre del archivo csv
-        nombre_archivo = categoria+"-"+fecha.strftime("%d-%m-%y")+".csv"
-        carpeta_actual=Path.cwd()
+        nombre_archivo = categoria + "-" + fecha.strftime("%d-%m-%y")+".csv"
+        carpeta_actual = Path.cwd()
 
         #se guarda el csv
         os.chdir(carpeta_creada)
